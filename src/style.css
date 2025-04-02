@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Sniglet&display=swap');
+
+body {
+    font-family: "Sniglet", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #ecf0f1;
+}
+
+#progressGroup {
+    position: absolute;
+    width: 200px;
+    margin: 0 -120px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    top: 40%;
+    left: 50%;
+
+    font-size: larger;
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 0.4em;
+    box-shadow: 0.3em 0.3em 1em #7f8c8d;
+}
+
+.lil-gui,
+.lil-gui.root>.title {
+    background-color: #0e1111 !important;
+}
+
+.lil-gui.root>.title {
+    font-size: 1.2em;
+}
+
+.lil-gui.root {
+    left: 50%;
+    margin: 0 -150px;
+
+    width: 300px;
+    padding: 0.2em;
+    border-radius: 0.4em;
+    padding-left: 1.5em;
+}
+
+.lil-gui,
+.lil-gui button {
+    font-family: "Sniglet", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1em;
+}
+
+.lil-gui input[type=checkbox] {
+    position: absolute;
+    right: 0.2em;
+}
+
+.lil-gui .widget .display {
+    position: absolute !important;
+    right: 0.1em;
+}
+
+.lil-gui option,
+.lil-gui .widget {
+    text-transform: capitalize;
+}
+
+.grab {
+    margin-top: -0.5em;
+    text-shadow:
+        0 5px white,
+        0 10px white,
+        5px 0 white,
+        5px 5px white,
+        5px 10px white;
+    padding: 0 0.5em;
+    padding-left: 0.75em;
+    display: flex;
+    flex-flow: wrap;
+    align-content: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+}
+
+#version {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    padding: 0.5em;
+}
+
+.loader {
+    position: relative;
+    width: 30px;
+    left: 80px;
+    margin-top: 0.3em;
+
+    aspect-ratio: 4;
+    --_g: no-repeat radial-gradient(circle closest-side, #000 90%, #0000);
+    background:
+        var(--_g) 0% 50%,
+        var(--_g) 50% 50%,
+        var(--_g) 100% 50%;
+    background-size: calc(100%/3) 100%;
+    animation: l7 1s infinite linear;
+}
+
+@keyframes l7 {
+    33% {
+        background-size: calc(100%/3) 0%, calc(100%/3) 100%, calc(100%/3) 100%
+    }
+
+    50% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 0%, calc(100%/3) 100%
+    }
+
+    66% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
+    }
+}
