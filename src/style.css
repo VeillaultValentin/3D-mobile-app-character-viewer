@@ -1,16 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Sniglet&display=swap');
+@font-face {
+  font-family: "Sniglet";
+  src: url("../Sniglet-Regular.ttf") format("truetype");
+}
 
 body {
     font-family: "Sniglet", system-ui;
     font-weight: 400;
     font-style: normal;
+    margin: 0;
 }
 
-canvas {
+#bg {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: #ecf0f1;
 }
 
 #progressGroup {
@@ -30,9 +33,29 @@ canvas {
     box-shadow: 0.3em 0.3em 1em #7f8c8d;
 }
 
-.lil-gui,
-.lil-gui.root>.title {
-    background-color: #0e1111 !important;
+#version {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    padding: 0.5em;
+}
+
+#infos {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 0.5em;
+}
+
+/* GUI restyling */
+.lil-gui, .lil-gui>.title, * {
+    --background-color: #1e272edd !important;
+    --title-background-color: transparent !important;
+    --widget-color: #27ae5f9c;
+    --hover-color: #2ecc709c;
+    --focus-color: #2ecc719c;
+    --number-color: #1e272e;
+    --spacing: 0.35em;
 }
 
 .lil-gui.root>.title {
@@ -40,17 +63,18 @@ canvas {
 }
 
 .lil-gui.root {
+    top: 2.5em;
+
     left: 50%;
     margin: 0 -150px;
 
     width: 300px;
     padding: 0.2em;
     border-radius: 0.4em;
-    padding-left: 1.5em;
+    padding-left: 1.75em;
 }
 
-.lil-gui,
-.lil-gui button {
+.lil-gui, .lil-gui button {
     font-family: "Sniglet", system-ui;
     font-weight: 400;
     font-style: normal;
@@ -67,37 +91,27 @@ canvas {
     right: 0.1em;
 }
 
-.lil-gui option,
-.lil-gui .widget {
+.lil-gui option, .lil-gui .widget {
     text-transform: capitalize;
 }
 
-.grab {
-    margin-top: -0.5em;
-    text-shadow:
-        0 5px white,
-        0 10px white,
-        5px 0 white,
-        5px 5px white,
-        5px 10px white;
-    padding: 0 0.5em;
-    padding-left: 0.75em;
-    display: flex;
-    flex-flow: wrap;
-    align-content: center;
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
+/* sub sub menu indentation */
+.lil-gui.root .lil-gui .lil-gui .title {
+    padding-left: 1em;
 }
 
-#version {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    padding: 0.5em;
+.lil-gui input[type='number'], .lil-gui input[type='text'] {
+    margin-right: 3px;
+    padding: 0 0.25em;
+    text-align: center;
+    font-family: "Sniglet", system-ui !important;
 }
 
+.search::placeholder {
+    color: var(--text-color);
+}
+
+/* loader dots animation */
 .loader {
     position: relative;
     width: 30px;
