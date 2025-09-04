@@ -14,3 +14,8 @@ export function onPropertyChange(o, callback) {
         }
     }
 }
+
+export function trackPointer(event, pointerVector) {
+    pointerVector.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointerVector.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
