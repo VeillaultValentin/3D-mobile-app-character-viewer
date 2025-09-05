@@ -1,8 +1,8 @@
 /*
 * --== Coding Style rules ==--
 * ALLCAPS names are related to file and lib imports
-* Object starting with a maj are objects/protypes of nature (rule exception: if they are relevant abreviations i.e. IKSolvers)
-* global variables must me constants if applicable and are always declared in header right after the imports
+* Object starting with a maj are objects/protypes of nature (rule exception: if they start with relevant abreviations i.e. IKSolvers)
+* global variables must be constants if applicable and are always declared in header right after the imports
 * single characters and single words are quoted with '' and longer strings that can contain spaces with ""
 * index.html automatically calls main() on load as it is the main app thread and it must pilot everthing else
 * every function and variables must be ignorant, file specific variables must be retrieved from CONFIG
