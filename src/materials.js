@@ -169,7 +169,7 @@ export function convertMaterialToNodes(material) {
     newNodeMaterial.opacity = material.opacity;
     newNodeMaterial.transparent = material.transparent;
     newNodeMaterial.side = material.side;
-    newNodeMaterial.name = material.name + "(Node)";
+    newNodeMaterial.name = material.name + '(Node)';
 
     material.dispose();
 
