@@ -1,16 +1,19 @@
 <!doctype html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D Character viewer</title>
-</head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>3D Character viewer</title>
+        <link rel="icon" type="image/x-icon" href="/app_logo.svg">
+    </head>
 
-<body>
-    <canvas id="bg"></canvas>
-    <div id="version">v0.0.0</div>
-    <script type="module" src="/src/main.js"></script>
-</body>
+    <body onload="main()">
+        <canvas id="bg"></canvas>
+        <video id="video" style="height: 100vh; width: 100%; display: none;" autoplay playsinline inert muted disablepictureinpicture disableremoteplayback></video>
+        <div id="infos"><span id="renderer">No renderer detected</span></div>
+        <div id="version">v0.0.0</div>
+        <script type="module" src="/src/main.js"></script>
+    </body>
 
 </html>
