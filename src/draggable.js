@@ -18,7 +18,6 @@ export function makeElementTouchDraggable(UIelement) {
 function dragPointerDown(e) {
     offsetX = element.offsetLeft - e.clientX + element.clientWidth / 2;
     offsetY = element.offsetTop - e.clientY + eHeight / 2;
-    //handle.ontouchmove = dragElement;
     handle.addEventListener('touchmove', dragElement, { passive: false });
     handle.setPointerCapture(e.pointerId);
 }
@@ -27,7 +26,7 @@ function dragElement(e) {
     let coords = e.targetTouches[0];
     if (coords.pageY >= 0 && coords.pageY <= window.innerHeight - 35) element.style.top = coords.pageY + offsetY + "px";
     if (coords.pageX >= 5 && coords.pageX <= window.innerWidth - 20) element.style.left = coords.pageX + offsetX + "px";
-    element.style.maxHeight = 'calc(100% - ' + element.style.top + ')';
+    element.style.maxHeight = "calc(100% - " + element.style.top + ")";
 }
 
 function clearDragEvents(e) {
@@ -36,7 +35,7 @@ function clearDragEvents(e) {
 }
 
 function addCSS() {
-    let style = document.createElement("style");
+    let style = document.createElement('style');
     style.textContent = `
     .grab {
         margin-top: -0.5em;
