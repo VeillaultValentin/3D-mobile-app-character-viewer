@@ -1,3 +1,16 @@
+/*
+* --== Coding Style rules ==--
+* ALLCAPS names are related to file and lib imports
+* Object starting with a maj are objects/protypes of nature (rule exception: if they are relevant abreviations i.e. IKSolvers)
+* global variables must me constants if applicable and are always declared in header right after the imports
+* single characters and single words are quoted with '' and longer strings that can contain spaces with ""
+* index.html automatically calls main() on load as it is the main app thread and it must pilot everthing else
+* every function and variables must be ignorant, file specific variables must be retrieved from CONFIG
+* any generic JS function must be implemented within FUNCTIONS
+* any material setup must be done within MATERIALS
+* any complex operation used more than once must be implemented in a dedicated function
+*/
+
 import { version } from '../package.json';
 import './style.css';
 
@@ -17,24 +30,23 @@ import GUI from 'lil-gui';
 import * as MATERIALS from './materials';
 import * as FUNCTIONS from './genericFcts';
 import * as DRAGGABLE from './draggable.js';
-
-import * as CONFIG from './characterConfig.json';
 import * as DQS from './dualQuaternionSkinning.tsl.js';
 
 import { color, mix, mx_fractal_noise_float, pass, positionView } from 'three/tsl';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 //global variables
+let CONFIG;
 const progressState = {};
 //scene globals
 const scene = new THREE.Scene();
 let camera, renderer, controls, postProcessing;
 //ray cast
-let INTERSECTED;
+let intersected;
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 //useful data sets
-const IKSolver = {};
+const IKSolvers = {};
 const meshList = {};
 const gizmoList = {};
 const gizmoHelpers = {};
@@ -47,7 +59,16 @@ let activeAction, previousAction, actions, mixer;
 const clock = new THREE.Timer();
 const api = {}; //interface API for UI
 
-init();
+window.main = main;
+async function main() {
+    await FUNCTIONS.loadJSON('/characterConfig.json').then((JSONdata) => {
+        CONFIG = JSONdata;
+        Object.freeze(CONFIG);
+    });
+    await init();
+    await load();
+    renderer.setAnimationLoop(animate);
+}
 
 async function init() {
     document.getElementById('version').innerText = 'v' + version;
@@ -66,18 +87,18 @@ async function init() {
     progressGroup.appendChild(progressStep);
     progressGroup.appendChild(progressSecondary);
     progressGroup.appendChild(loaderAnim);
-    progressTitle.textContent = 'Loading';
+    progressTitle.textContent = "Loading";
     document.getElementsByTagName('body')[0].appendChild(progressGroup);
 
     Object.assign(progressState, {
         global: 0,
         substep: 0,
-        current: '<Current Step>',
+        current: "<Current Step>",
         total: 5
     });
 
     //progress data listener
-    FUNCTIONS.onPropertyChange(progressState, function (p, v) {
+    FUNCTIONS.onPropertyChange(progressState, (p, v) => {
         switch (p) {
             case 'global':
                 progressMain.value = v / 100
@@ -96,12 +117,12 @@ async function init() {
         }
     });
 
-    const video = document.getElementById("video");
+    const video = document.getElementById('video');
 
     //scene setup
     progressState.global = 0 / progressState.total * 100;
     progressState.substep = 0;
-    progressState.current = 'Initialazing scene';
+    progressState.current = "Initialazing scene";
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGPURenderer({
         canvas: document.querySelector('#bg'),
@@ -118,7 +139,7 @@ async function init() {
     camera.zoom = 2;
     camera.updateProjectionMatrix();
 
-    window.addEventListener("resize", () => {
+    window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.setViewOffset(window.innerWidth * 3, window.innerHeight * 2, window.innerWidth * 1, window.innerHeight * 0.05, window.innerWidth, window.innerHeight);
         camera.updateProjectionMatrix();
@@ -157,22 +178,25 @@ async function init() {
         skeletonHelper: null,
         selectedBoneGizmo: null,
         mode: 'rotate',
-        resetBoneFct: function () {
-            if (this.selectedBone) {
-                switch (this.mode) {
+        resetBoneFct: () => {
+            if (api.selectedBone) {
+                switch (api.mode) {
                     case 'rotate':
-                        this.selectedBone.setRotationFromEuler(bonesInitTransforms[this.selectedBone.name]
-                            .rotation);
+                        api.selectedBone.setRotationFromEuler(bonesInitTransforms[api.selectedBone.name].rotation);
                         break;
                     case 'translate':
-                        this.selectedBone.position.set(bonesInitTransforms[this.selectedBone.name].position
-                            .x, bonesInitTransforms[this.selectedBone.name].position.y,
-                            bonesInitTransforms[this.selectedBone.name].position.z);
+                        api.selectedBone.position.set(
+                            bonesInitTransforms[api.selectedBone.name].position.x,
+                            bonesInitTransforms[api.selectedBone.name].position.y,
+                            bonesInitTransforms[api.selectedBone.name].position.z
+                        );
                         break;
                     case 'scale':
-                        this.selectedBone.scale.set(bonesInitTransforms[this.selectedBone.name].scale.x,
-                            bonesInitTransforms[this.selectedBone.name].scale.y, bonesInitTransforms[
-                                this.selectedBone.name].scale.z);
+                        api.selectedBone.scale.set(
+                            bonesInitTransforms[api.selectedBone.name].scale.x,
+                            bonesInitTransforms[api.selectedBone.name].scale.y,
+                            bonesInitTransforms[api.selectedBone.name].scale.z
+                        );
                         break;
                 }
             }
@@ -190,10 +214,10 @@ async function init() {
         blinkCtrls: []
     });
     //api listeners
-    FUNCTIONS.onPropertyChange(api, function (p, v) {
+    FUNCTIONS.onPropertyChange(api, (p, v) => {
         switch (p) {
             case 'mode':
-                this.selectedBoneGizmo.setMode(v);
+                api.selectedBoneGizmo.setMode(v);
                 break;
             case 'skeletonHelperDisplay':
                 if (v) {
@@ -201,17 +225,17 @@ async function init() {
                         scene.add(bonesGeoList[i]);
                     }
                 } else {
-                    this.selectedBoneGizmo.detach();
-                    this.selectedBone = null;
-                    this.sklUImenu.name('Show Bones');
-                    this.gui.domElement.childNodes[1].innerText = "Controls";
+                    api.selectedBoneGizmo.detach();
+                    api.selectedBone = null;
+                    api.sklUImenu.name('Show Bones');
+                    api.gui.domElement.childNodes[1].innerText = 'Controls';
                     for (let i = 0; i < bonesGeoList.length; i++) {
                         scene.remove(bonesGeoList[i]);
                     }
                 }
                 break;
             case 'backgroundColor':
-                if (!this.backgroundImage) scene.backgroundNode = mix(color(v), color(v).mul(2), mx_fractal_noise_float(positionView.mul(5)).mul(0.5));
+                if (!api.backgroundImage) scene.backgroundNode = mix(color(v), color(v).mul(2), mx_fractal_noise_float(positionView.mul(5)).mul(0.5));
                 break;
             case 'grid':
                 gridHelper.visible = v;
@@ -227,73 +251,72 @@ async function init() {
                         navigator.mediaDevices.getUserMedia( constraints ).then( function ( stream ) {
                             video.srcObject = stream;
                             video.play();
-                            video.style.display = "block";
+                            video.style.display = 'block';
                         } ).catch( function ( error ) {
-                            console.error( 'Unable to access the camera/webcam.', error );
+                            console.error( "Unable to access the camera/webcam.", error );
                         } );
                     } else {
-                        console.error( 'MediaDevices interface not available.' );
+                        console.error( "MediaDevices interface not available." );
                     }
                 } else {
                     video.pause();
-                    video.style.display = "none";
-                    scene.backgroundNode = mix(color(this.backgroundColor), color(this.backgroundColor).mul(2), mx_fractal_noise_float(positionView.mul(5)).mul(0.5));
+                    video.style.display = 'none';
+                    scene.backgroundNode = mix(color(api.backgroundColor), color(api.backgroundColor).mul(2), mx_fractal_noise_float(positionView.mul(5)).mul(0.5));
                 }
                 break;
             case 'statsVisible':
                 if(v) {
-                    this.stats.dom.childNodes.forEach((c) => {c.style.display = 'block'});
+                    api.stats.dom.childNodes.forEach((c) => {c.style.display = 'block'});
                 } else {
-                    this.stats.dom.childNodes.forEach((c) => {c.style.display = 'none'});
+                    api.stats.dom.childNodes.forEach((c) => {c.style.display = 'none'});
                 }
                 break;
             case 'breathing':
                 if (!v) {
-                    if (this.breatheCtrl) {
-                        this.breatheCtrl.enable();
-                        this.breatheCtrl.setValue(0);
+                    if (api.breatheCtrl) {
+                        api.breatheCtrl.enable();
+                        api.breatheCtrl.setValue(0);
                     }
-                    if (this.blinkCtrls.length > 0) {Object.values(this.blinkCtrls).forEach( e => {
+                    if (api.blinkCtrls.length > 0) {Object.values(api.blinkCtrls).forEach( e => {
                         e.enable();
                         e.setValue(0);
                     });}
                 } else {
-                    if (this.breatheCtrl) this.breatheCtrl.disable();
-                    if (this.blinkCtrls.length > 0) Object.values(this.blinkCtrls).forEach( e => e.disable());
+                    if (api.breatheCtrl) api.breatheCtrl.disable();
+                    if (api.blinkCtrls.length > 0) Object.values(api.blinkCtrls).forEach( e => e.disable());
                 }
                 break;
         };
     });
 
-    //tracks pointer coords to update INTERSECTED with any bone UI intersecting with pointer coords
+    //tracks pointer coords to update 'intersected' with any bone UI intersecting with pointer coords
     document.addEventListener('mousemove', (e) => FUNCTIONS.trackPointer(e, pointer));
 
     await renderer.init();
-    loadAndRun(() => renderer.setAnimationLoop(animate));
 };
 
-async function loadAndRun(runCallback) {  
+async function load() {  
     const srcFile = CONFIG.filePath;
     const loader = new GLTFLoader();
 
-    /* decoders for compressed assets
-    * they don't seem to be beneficial on low end devices, additional runtime cost is too high compared to the vram gains
+    /* decoders for compressed assets, used automatically if matching compression is detected in the file
+    * compression methods don't seem to be beneficial on low end devices, additional runtime cost is too high compared to the vram gains
     * on high end devices loading is improved and performance cost on runtime is worth it
     */
     const ktx2Loader = new KTX2Loader();
-    ktx2Loader.setTranscoderPath("/loaders/basis/");
+    ktx2Loader.setTranscoderPath('/loaders/basis/');
     ktx2Loader.detectSupport(renderer);
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderConfig({type: 'js'});
-    dracoLoader.setDecoderPath("/loaders/draco/");
+    dracoLoader.setDecoderPath('/loaders/draco/');
     loader.setDRACOLoader(dracoLoader);
     loader.setKTX2Loader(ktx2Loader);
     loader.setMeshoptDecoder(MeshoptDecoder);
     
-    //init meta progress
+    //init meta progress values
     progressState.global = 1 / progressState.total * 100;
     progressState.substep = 0;
-    progressState.current = 'Unpacking scene';
+    progressState.current = "Unpacking scene";
 
     await loader.loadAsync(
         srcFile,
@@ -301,18 +324,18 @@ async function loadAndRun(runCallback) {
             progressState.substep = data.loaded / data.total * 100;
         }
     ).then(
-        (gltf) => {
-            //init meta progress
+        (data) => {
+            //init meta progress values
             progressState.global = 2 / progressState.total * 100;
             progressState.substep = 0;
-            progressState.current = 'Initializing scene';
+            progressState.current = "Initializing scene";
             let count = 0;
-            gltf.scene.traverse(() => { count++; });
+            data.scene.traverse(() => { count++; });
             let progress = 0;
 
             let skinnedMeshReference;
 
-            gltf.scene.traverse(function (child) {
+            data.scene.traverse(function (child) {
                 if (child instanceof THREE.Mesh) {
                     //populate meshList
                     if (!regex.test(child.name)) {
@@ -337,6 +360,7 @@ async function loadAndRun(runCallback) {
                         child.material = MATERIALS.convertMaterialToNodes(child.material);
                         DQS.enableDQS(child, false);
                     };
+                    child.frustumCulled = true;
                 } else {
                     if (child instanceof THREE.Bone) {
                         bonesInitTransforms[child.name] = {
@@ -350,23 +374,21 @@ async function loadAndRun(runCallback) {
                 progressState.substep = progress / count * 100;
             });
 
-            api.skeletonHelper = new THREE.SkeletonHelper(gltf.scene);
+            api.skeletonHelper = new THREE.SkeletonHelper(data.scene);
             generateUIskeleton(api.skeletonHelper, CONFIG.boneCtrlExclusions);
             setupCustomCtrls(api.skeletonHelper, skinnedMeshReference);
-            createGUI(gltf.scene, gltf.animations, CONFIG.hiddenMeshes);
+            createGUI(data.scene, data.animations, CONFIG.hiddenMeshes);
 
-            scene.add(gltf.scene);
+            scene.add(data.scene);
 
             progressState.global = 5 / progressState.total * 100;
             progressState.substep = 100;
-            progressState.current = 'Finishing work';
+            progressState.current = "Finishing work";
         },
         (error) => {
             console.error(error);
         }
     );
-
-    runCallback();
 }
 
 let f = 0;
@@ -375,8 +397,8 @@ function animate() {
     else document.getElementById('renderer').innerText = renderer.backend.constructor.name.split('Backend')[0];
 
     //update IK
-    if (api.IK && IKSolver && api.pose == 'Default') {
-        Object.values(IKSolver).forEach(e => {
+    if (api.IK && IKSolvers && api.pose == 'Default') {
+        Object.values(IKSolvers).forEach(e => {
             e.update();
         })
     }
@@ -387,7 +409,6 @@ function animate() {
         if (obj instanceof THREE.Mesh) {
             let subName = obj.name.replace(regex, '');
             obj.visible = meshList[subName];
-            
             if(meshList[subName]) obj.material.wireframe = api.wireframe;
         }
     });
@@ -441,7 +462,7 @@ function animate() {
     if (CONFIG.poseExtraSettings[api.pose]) {
         if (CONFIG.poseExtraSettings[api.pose].morphs) {
             api.gui.children.forEach(e => {
-                if (e._title == 'Morph targets') { e.children.forEach(g => {
+                if (e._title == "Morph targets") { e.children.forEach(g => {
                     if (g._title == 'Body') { g.children.forEach(c => {
                         Object.keys(CONFIG.poseExtraSettings[api.pose].morphs).forEach(t => {
                             if (c._name == t) c.setValue(CONFIG.poseExtraSettings[api.pose].morphs[t]);
@@ -452,7 +473,7 @@ function animate() {
         }
     }
 
-    //'Alive' loop -- based on timeStamp rather than clock.delta because it's independant of animation time scaling and progress ; breathing speed etc is meant to be static
+    //'Alive' loop -- based on timeStamp rather than clock.delta because it's independant of animation time scaling and progress
     if (api.breathing) {
         if (api.breatheCtrl) {
             let overriden = false;
@@ -477,18 +498,17 @@ function animate() {
         raycaster.setFromCamera(pointer, camera);
         const intersects = raycaster.intersectObjects(bonesGeoList, false);
         if (intersects.length > 0) {
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.material.color = new THREE.Color(0xffff00);
+            intersected = intersects[0].object;
+            intersected.material.color = new THREE.Color(0xffff00);
         } else {
             for (let i = 0; i < bonesGeoList.length; i++) {
                 bonesGeoList[i].material.color = new THREE.Color(0xffffff);
             }
-            INTERSECTED = null;
+            intersected = null;
         }
     }
 
     //draw new frame
-    //renderer.renderAsync(scene, camera);
     postProcessing.renderAsync();
 
     clock.update();
@@ -496,10 +516,10 @@ function animate() {
 }
 
 function createGUI(scene, animations, hiddenMeshes) {
-    //init meta progress
+    //init meta progress values
     progressState.global = 4 / progressState.total * 100;
     progressState.substep = 0;
-    progressState.current = 'Making UI';
+    progressState.current = "Making UI";
     let progress = 0;
     let count = 4;
     progressState.substep = ++progress / count * 100;
@@ -512,13 +532,13 @@ function createGUI(scene, animations, hiddenMeshes) {
     mixer = new THREE.AnimationMixer(scene);
 
     //Interface general controls
-    const sceneFolder = api.gui.addFolder('Interface');
-    sceneFolder.addColor(api, 'backgroundColor').name('Background color');
-    sceneFolder.add(api, 'backgroundImage').name('Camera background');
-    sceneFolder.add(api, 'lightIntensity', 1, 5, 0.1).name('Light intensity');
-    sceneFolder.add(api, 'grid').name('3D Grid');
-    sceneFolder.add(api, 'wireframe').name('Wireframe');
-    sceneFolder.add(api, 'statsVisible').name('Show App Stats');
+    const sceneFolder = api.gui.addFolder("Interface");
+    sceneFolder.addColor(api, 'backgroundColor').name("Background color");
+    sceneFolder.add(api, 'backgroundImage').name("Camera background");
+    sceneFolder.add(api, 'lightIntensity', 1, 5, 0.1).name("Light intensity");
+    sceneFolder.add(api, 'grid').name("3D Grid");
+    sceneFolder.add(api, 'wireframe').name("Wireframe");
+    sceneFolder.add(api, 'statsVisible').name("Show App Stats");
     
     //setup skeleton UI gizmo
     let gizmoSlct = new TransformControls(camera, renderer.domElement);
@@ -537,27 +557,27 @@ function createGUI(scene, animations, hiddenMeshes) {
     api.selectedBoneGizmo = gizmoSlct;
     
     renderer.domElement.addEventListener('click', () => {
-        if (INTERSECTED) {
-            let bone = api.skeletonHelper.bones.find(b => b.name == INTERSECTED.name);
+        if (intersected) {
+            let bone = api.skeletonHelper.bones.find(b => b.name == intersected.name);
             api.selectedBoneGizmo.attach(bone);
             api.selectedBone = bone;
             scene.add(api.selectedBoneGizmo.getHelper());
-            api.sklUImenu.name('Show Bones (' + INTERSECTED.name + ')');
-            if (api.gui.domElement.classList.contains("closed")) api.gui.domElement.childNodes[1].innerText = "Controls (" + INTERSECTED.name + ")";
+            api.sklUImenu.name("Show Bones (" + intersected.name + ")");
+            if (api.gui.domElement.classList.contains('closed')) api.gui.domElement.childNodes[1].innerText = "Controls (" + intersected.name + ")";
         }
     });
 
-    const scenePoseFolder = api.gui.addFolder('Pose utils');
-    api.sklUImenu = scenePoseFolder.add(api, 'skeletonHelperDisplay').name('Show Bones');
-    scenePoseFolder.add(api, 'mode').options(['rotate', 'translate', 'scale']).name('Mode');
-    scenePoseFolder.add(api, 'resetBoneFct').name('Reset Bone');
-    scenePoseFolder.add(api, 'mirrorPose').name('Mirror Pose');
-    scenePoseFolder.add(api, 'IK').name('IK Controls (Default pose only)');
+    const scenePoseFolder = api.gui.addFolder("Pose utils");
+    api.sklUImenu = scenePoseFolder.add(api, 'skeletonHelperDisplay').name("Show Bones");
+    scenePoseFolder.add(api, 'mode').options(['rotate', 'translate', 'scale']).name("Mode");
+    scenePoseFolder.add(api, 'resetBoneFct').name("Reset Bone");
+    scenePoseFolder.add(api, 'mirrorPose').name("Mirror Pose");
+    scenePoseFolder.add(api, 'IK').name("IK Controls (Default pose only)");
 
     progressState.substep = ++progress / count * 100;
 
     //mesh list
-    const meshFolder = api.gui.addFolder('Meshes');
+    const meshFolder = api.gui.addFolder("Meshes");
     Object.keys(meshList).forEach(e => {
         let toggle = meshFolder.add(meshList, e).name(e);
         hiddenMeshes.forEach(m => {
@@ -568,7 +588,7 @@ function createGUI(scene, animations, hiddenMeshes) {
     });
 
     //shape keys
-    const expressionFolder = api.gui.addFolder('Morph targets');
+    const expressionFolder = api.gui.addFolder("Morph targets");
     let found = false;
     scene.traverse(m => {
         if (m instanceof THREE.Mesh) {
@@ -605,14 +625,14 @@ function createGUI(scene, animations, hiddenMeshes) {
     }
 
     //poses (or animations)
-    const poseFolder = api.gui.addFolder('Poses & animations');
-    const clipCtrl = poseFolder.add(api, 'pose').options(poses).name('Active');
+    const poseFolder = api.gui.addFolder("Poses & animations");
+    const clipCtrl = poseFolder.add(api, 'pose').options(poses).name("Active");
     clipCtrl.onChange(function () {
         fadeToAction(api.pose, 0.5);
         //automatic mesh toggling animations if specified
         if (CONFIG.poseExtraSettings[api.pose]) {
             if (CONFIG.poseExtraSettings[api.pose].meshes) {
-                api.gui.children.forEach(e => {if (e._title == 'Meshes') {e.children.forEach(m => {
+                api.gui.children.forEach(e => {if (e._title == "Meshes") {e.children.forEach(m => {
                     if (CONFIG.poseExtraSettings[api.pose].meshes[m._name] != undefined) m.setValue(CONFIG.poseExtraSettings[api.pose].meshes[m._name]);
                 })}});
             }
@@ -652,7 +672,7 @@ function createGUI(scene, animations, hiddenMeshes) {
 }
 
 function registerMorphMesh(scene, morphMesh, folder) {
-    const expressions = Object.keys(morphMesh.morphTargetDictionary);
+    const expressions = morphMesh.morphTargetDictionary ? Object.keys(morphMesh.morphTargetDictionary) : [];
     for (let i = 0; i < expressions.length; i++) {
         let ctrl = folder.add(morphMesh.morphTargetInfluences, i, 0, 1, 0.01).name(expressions[i]);
         
@@ -688,13 +708,13 @@ function addSearch(DOMelementLists) {
         searchBar.classList.add('search');
         searchBar.placeholder = "Filter by name ...";
         
-        searchBar.addEventListener("keyup", () => {
+        searchBar.addEventListener('keyup', () => {
             //skips 1st element as it should be the search input, not a list element
             for (let i = 1; i < DOMelementLists.childNodes.length; i++) {
                 if (DOMelementLists.childNodes[i].textContent.toUpperCase().indexOf(searchBar.value.toUpperCase()) > -1) {
-                    DOMelementLists.childNodes[i].style.display = "";
+                    DOMelementLists.childNodes[i].style.display = '';
                 } else {
-                    DOMelementLists.childNodes[i].style.display = "none";
+                    DOMelementLists.childNodes[i].style.display = 'none';
                 }
             }
         });
@@ -850,7 +870,7 @@ function gizmoSetup(name, space, mode, size, target) {
 }
 
 function applyIK(mesh, name, solver) {
-    IKSolver[name] = new CCDIKSolver(mesh, solver);
+    IKSolvers[name] = new CCDIKSolver(mesh, solver);
     let IKHelper = new CCDIKHelper(mesh, solver, 0.01);
     gizmoList[name + 'Helper'] = false;
     gizmoHelpers[name + 'Helper'] = IKHelper;
@@ -881,10 +901,10 @@ function getMirrorBoneName(name) {
     let side = name.substr(name.length - 1)
     switch (side) {
         case 'L':
-            mirrorName = mirrorName.replace(/.$/, "R");
+            mirrorName = mirrorName.replace(/.$/, 'R');
             break;
         case 'R':
-            mirrorName = mirrorName.replace(/.$/, "L");
+            mirrorName = mirrorName.replace(/.$/, 'L');
             break;
         default:
             return 'none';
@@ -895,7 +915,7 @@ function getMirrorBoneName(name) {
 function setupCustomCtrls(sklHelper, sknMesh) {
     progressState.global = 3 / progressState.total * 100;
     progressState.substep = 0;
-    progressState.current = 'Setting up IK controls';
+    progressState.current = "Setting up IK controls";
     let progress = 0;
     let count = Object.entries(CONFIG.IK).length;
 
@@ -919,6 +939,6 @@ function setupIKchains(sklHelper, IKChain) {
         gizmoSetup(IKChain.target + 'Ctrl', 'world', 'translate', 0.2, sklHelper.bones.find(b => b.name == IKChain.target));
         return IKSettings;
     } else {
-        console.warn(IKChain.target + ': Invalid IK setup provided, either bones are absent or settings are incorrect.')
+        console.warn(IKChain.target + ": Invalid IK setup provided, either bones are absent or settings are incorrect.")
     }
 }
