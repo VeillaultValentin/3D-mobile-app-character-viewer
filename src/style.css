@@ -1,0 +1,288 @@
+@font-face {
+    font-family: "Audiowide";
+    src: url("../Audiowide-Regular.ttf") format("truetype");
+}
+
+body {
+    font-family: "Audiowide", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    margin: 0;
+
+    background-color: #111;
+}
+
+#bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#progressGroup {
+    position: absolute;
+    width: 250px;
+    margin: 0 -120px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    top: 40%;
+    left: 50%;
+
+    font-size: larger;
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 0.4em;
+    box-shadow: 0.3em 0.3em 1em #7f8c8d;
+}
+
+#version {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    padding: 0.5em;
+}
+
+#infos {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 0.5em;
+}
+
+/*.liquidFX {
+    position: absolute;
+    z-index: -1;
+    backdrop-filter: blur(4px);
+    filter: url(#glass-distortion);
+    isolation: isolate;
+    height: 100%;
+    width: 100%;
+}*/
+
+/* GUI restyling */
+.lil-gui,
+.lil-gui>.title {
+    --background-color: rgba(255, 255, 255, 0.2) !important;
+    --title-background-color: transparent !important;
+    --widget-color: #e9e9e941;
+    --hover-color: #ebebeba9;
+    --focus-color: #ebebeba9;
+    --number-color: #fff;
+    --spacing: 0.35em;
+    --text-color: #75ff9e;
+    --title-color: #3dff77;
+}
+
+.lil-gui * {
+    text-shadow: 0px 0px 5px #111111ff;
+}
+
+.lil-gui .title {
+    border-width: 0px 0 !important;
+    color: var(--title-color);
+}
+
+.lil-gui *:has(input[type="color"])~input {
+    background-color: transparent !important;
+}
+
+/*.lil-gui.lil-gui.root > .liquidFX {
+    margin-left: -1.75em;
+    border-radius: 1.1em;
+}*/
+
+.lil-gui.root>.title {
+    font-size: 1.2em;
+    color: var(--title-color);
+
+    margin: 0.3em 0;
+}
+
+.lil-gui.root>.children {
+    border-radius: 0.75em;
+}
+
+.lil-gui.root {
+    top: 2.5em;
+
+    left: 50%;
+    margin: 0 -165px;
+
+    width: 330px;
+    padding-left: 1.75em;
+
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 2px 2px 1px 0 rgba(255, 255, 255, 0.2),
+        inset -1px -1px 1px 1px rgba(255, 255, 255, 0.2);
+
+}
+
+.lil-gui .widget,
+.lil-gui input,
+.lil-gui .search::placeholder {
+    color: var(--number-color);
+}
+
+.lil-gui {
+    border-radius: 0.75em;
+
+    margin: 0.4em 0;
+    padding: 0.1em 0.5em;
+    padding-right: 0.25em;
+    
+    backdrop-filter: blur(10px);
+
+    position: relative;
+}
+
+.lil-gui.root .children {
+    padding-right: 0.25em;
+}
+
+.lil-gui .title:focus {
+    text-decoration: none;
+}
+
+.lil-gui,
+.lil-gui button {
+    font-family: "Audiowide", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 1em;
+}
+
+.lil-gui button {
+    width: calc(100% - 2px);
+}
+
+.lil-gui input[type=checkbox] {
+    position: absolute;
+    right: 0.2em;
+}
+
+.lil-gui .widget .display {
+    position: absolute !important;
+    right: 0.1em;
+}
+
+.lil-gui option,
+.lil-gui .widget {
+    text-transform: capitalize;
+}
+
+/* sub sub menu indentation */
+.lil-gui.root .lil-gui .lil-gui .title {
+    padding-left: 1em;
+}
+
+.lil-gui.root .lil-gui .lil-gui .children .name {
+    font-size: 0.9em;
+}
+
+.lil-gui input[type='number'],
+.lil-gui input[type='text'] {
+    margin-right: 3px;
+    padding: 0 0.25em;
+    text-align: center;
+    font-family: "Audiowide", system-ui !important;
+}
+
+/* loader dots animation */
+.loader {
+    position: relative;
+    width: 30px;
+    left: calc(250px / 2 - 30px);
+    margin-top: 0.3em;
+
+    aspect-ratio: 4;
+    --_g: no-repeat radial-gradient(circle closest-side, #fff 90%, #000);
+    background:
+        var(--_g) 0% 50%,
+        var(--_g) 50% 50%,
+        var(--_g) 100% 50%;
+    background-size: calc(100%/3) 100%;
+    animation: l7 1s infinite linear;
+}
+
+@keyframes l7 {
+    33% {
+        background-size: calc(100%/3) 0%, calc(100%/3) 100%, calc(100%/3) 100%
+    }
+
+    50% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 0%, calc(100%/3) 100%
+    }
+
+    66% {
+        background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%
+    }
+}
+
+/* Neo Style */
+.neo-bar-wrapper {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 5px;
+    background-color: white;
+    margin: 0.35em 0;
+}
+
+.neo-bar {
+    width: 5rem;
+    height: 4px;
+    border-radius: 5px;
+    animation: rotate 3s infinite linear;
+    background: linear-gradient(to right, #18ea2c 0%, #5df06b 25%, #a3f7ab 50%, #5df06b 75%, #18ea2c 100%);
+    filter: drop-shadow(0px 0px 5px #18ea2c) hue-rotate(0deg);
+}
+
+@keyframes rotate {
+    from {
+        background-position: calc(20rem * -1);
+    }
+
+    to {
+        background-position: 0px;
+    }
+}
+
+.neo-main-element {
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    background-color: transparent;
+
+    padding: 8px;
+}
+
+.neo-border {
+    box-shadow: none !important;
+    border-radius: 12px !important;
+    padding: 4px !important;
+    background: 
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs></defs><rect width="100%" height="100%" x="0" y="0" fill="black" rx="10px" ry="10px" /></svg>') content-box no-repeat,
+        repeating-conic-gradient(from var(--a, 0deg), #18ea2c, #5df06b, #a3f7ab, #5df06b, #18ea2c) border-box;
+    filter: drop-shadow(0px 0px 3px #18ea2c) hue-rotate(0deg);
+    animation: a 2s linear infinite;
+
+    mix-blend-mode: lighten;
+
+    backdrop-filter: blur(10px);
+}
+
+.neo-main-element * {
+    color: #fff;
+    text-shadow: 0px 0px 5px #111111bb;
+}
+
+@property --a {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes a {
+    to {
+        --a: 1turn;
+    }
+}
